@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>像素风机甲对战小游戏</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- 游戏主页 -->
+    <div id="home" class="page">
+        <h1 class="game-title">像素风机甲对战</h1>
+        <button id="start-btn" class="pixel-btn">开始游戏</button>
+        <div class="instructions">
+            <h2>操作说明</h2>
+            <div class="controls">
+                <div class="control-group">
+                    <h3>玩家1 (红色机甲)</h3>
+                    <p>移动: W, A, S, D</p>
+                    <p>攻击: J</p>
+                    <p>防御: K</p>
+                </div>
+                <div class="control-group">
+                    <h3>玩家2 (蓝色机甲)</h3>
+                    <p>移动: 方向键</p>
+                    <p>攻击: 数字键 1</p>
+                    <p>防御: 数字键 2</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 游戏界面 -->
+    <div id="game" class="page hidden">
+        <div class="game-header">
+            <div class="health-bar player1">
+                <div class="health-fill" id="player1-health"></div>
+            </div>
+            <div class="health-bar player2">
+                <div class="health-fill" id="player2-health"></div>
+            </div>
+        </div>
+        <canvas id="game-canvas" width="800" height="400"></canvas>
+        <div class="mobile-controls">
+            <div class="dpad player1">
+                <button class="dpad-btn up">W</button>
+                <button class="dpad-btn left">A</button>
+                <button class="dpad-btn down">S</button>
+                <button class="dpad-btn right">D</button>
+            </div>
+            <div class="action-buttons player1">
+                <button class="action-btn attack">J</button>
+                <button class="action-btn defend">K</button>
+            </div>
+            <div class="dpad player2">
+                <button class="dpad-btn up">↑</button>
+                <button class="dpad-btn left">←</button>
+                <button class="dpad-btn down">↓</button>
+                <button class="dpad-btn right">→</button>
+            </div>
+            <div class="action-buttons player2">
+                <button class="action-btn attack">1</button>
+                <button class="action-btn defend">2</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 游戏结束界面 -->
+    <div id="end" class="page hidden">
+        <h1 id="result" class="result-title"></h1>
+        <button id="restart-btn" class="pixel-btn">重新开始</button>
+    </div>
+
+    <script src="js/game.js"></script>
+</body>
+</html>
