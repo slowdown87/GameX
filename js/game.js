@@ -134,15 +134,27 @@ function gameLoop() {
     // 绘制玩家
     drawPlayers();
     
+    // 绘制攻击特效
+    drawAttackEffects();
+    
     // 检查游戏结束条件
     checkGameEnd();
 }
 
 // 绘制背景
 function drawBackground() {
-    // 绘制天空
-    ctx.fillStyle = '#2c3e50';
+    // 绘制天空渐变
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height - 50);
+    gradient.addColorStop(0, '#2c3e50');
+    gradient.addColorStop(1, '#34495e');
+    ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height - 50);
+    
+    // 绘制云朵
+    drawClouds();
+    
+    // 绘制远处山脉
+    drawMountains();
     
     // 绘制地面
     ctx.fillStyle = '#7f8c8d';
@@ -154,6 +166,83 @@ function drawBackground() {
         for (let j = canvas.height - 50; j < canvas.height; j += 20) {
             ctx.fillRect(i, j, 10, 10);
         }
+    }
+    
+    // 绘制地面细节
+    drawGroundDetails();
+}
+
+// 绘制云朵
+function drawClouds() {
+    ctx.fillStyle = '#ecf0f1';
+    // 云朵1
+    ctx.fillRect(50, 50, 40, 20);
+    ctx.fillRect(70, 40, 40, 20);
+    ctx.fillRect(90, 50, 40, 20);
+    // 云朵2
+    ctx.fillRect(200, 80, 30, 15);
+    ctx.fillRect(215, 70, 30, 15);
+    ctx.fillRect(230, 80, 30, 15);
+    // 云朵3
+    ctx.fillRect(500, 60, 45, 25);
+    ctx.fillRect(520, 50, 45, 25);
+    ctx.fillRect(540, 60, 45, 25);
+    // 云朵4
+    ctx.fillRect(650, 90, 35, 18);
+    ctx.fillRect(665, 80, 35, 18);
+    ctx.fillRect(680, 90, 35, 18);
+}
+
+// 绘制山脉
+function drawMountains() {
+    // 远处山脉
+    ctx.fillStyle = '#34495e';
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.height - 100);
+    ctx.lineTo(150, canvas.height - 200);
+    ctx.lineTo(300, canvas.height - 150);
+    ctx.lineTo(450, canvas.height - 220);
+    ctx.lineTo(600, canvas.height - 180);
+    ctx.lineTo(750, canvas.height - 210);
+    ctx.lineTo(800, canvas.height - 100);
+    ctx.closePath();
+    ctx.fill();
+    
+    // 近处山脉
+    ctx.fillStyle = '#2c3e50';
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.height - 80);
+    ctx.lineTo(100, canvas.height - 150);
+    ctx.lineTo(250, canvas.height - 120);
+    ctx.lineTo(400, canvas.height - 160);
+    ctx.lineTo(550, canvas.height - 130);
+    ctx.lineTo(700, canvas.height - 170);
+    ctx.lineTo(800, canvas.height - 80);
+    ctx.closePath();
+    ctx.fill();
+}
+
+// 绘制地面细节
+function drawGroundDetails() {
+    // 绘制石头
+    ctx.fillStyle = '#5d6d7e';
+    ctx.fillRect(50, canvas.height - 45, 15, 15);
+    ctx.fillRect(120, canvas.height - 40, 10, 10);
+    ctx.fillRect(200, canvas.height - 48, 18, 18);
+    ctx.fillRect(280, canvas.height - 42, 12, 12);
+    ctx.fillRect(350, canvas.height - 46, 16, 16);
+    ctx.fillRect(430, canvas.height - 41, 11, 11);
+    ctx.fillRect(500, canvas.height - 47, 17, 17);
+    ctx.fillRect(580, canvas.height - 43, 13, 13);
+    ctx.fillRect(650, canvas.height - 49, 19, 19);
+    ctx.fillRect(720, canvas.height - 44, 14, 14);
+    
+    // 绘制草丛
+    ctx.fillStyle = '#27ae60';
+    for (let i = 0; i < canvas.width; i += 30) {
+        ctx.fillRect(i, canvas.height - 50, 5, 10);
+        ctx.fillRect(i + 10, canvas.height - 50, 5, 10);
+        ctx.fillRect(i + 20, canvas.height - 50, 5, 10);
     }
 }
 
@@ -242,6 +331,9 @@ function updatePlayer(player, playerId) {
     }
 }
 
+// 攻击特效数组
+let attackEffects = [];
+
 // 检查攻击碰撞
 function checkAttackCollision() {
     const player1 = gameState.players.player1;
@@ -257,6 +349,11 @@ function checkAttackCollision() {
             if (!player2.isDefending) {
                 player2.health = Math.max(0, player2.health - player1.attack);
                 updateHealthBars();
+                // 添加击中特效
+                addHitEffect(player2.x, player2.y, '#ff0000');
+            } else {
+                // 添加防御特效
+                addDefenseEffect(player2.x, player2.y);
             }
         }
     }
@@ -271,9 +368,63 @@ function checkAttackCollision() {
             if (!player1.isDefending) {
                 player1.health = Math.max(0, player1.health - player2.attack);
                 updateHealthBars();
+                // 添加击中特效
+                addHitEffect(player1.x, player1.y, '#0000ff');
+            } else {
+                // 添加防御特效
+                addDefenseEffect(player1.x, player1.y);
             }
         }
     }
+    
+    // 更新攻击特效
+    updateAttackEffects();
+}
+
+// 添加击中特效
+function addHitEffect(x, y, color) {
+    for (let i = 0; i < 8; i++) {
+        attackEffects.push({
+            x: x + 20 + (Math.random() - 0.5) * 40,
+            y: y + 30 + (Math.random() - 0.5) * 40,
+            dx: (Math.random() - 0.5) * 4,
+            dy: (Math.random() - 0.5) * 4,
+            life: 10,
+            color: color
+        });
+    }
+}
+
+// 添加防御特效
+function addDefenseEffect(x, y) {
+    for (let i = 0; i < 12; i++) {
+        attackEffects.push({
+            x: x + 20 + Math.cos((Math.PI * 2 / 12) * i) * 30,
+            y: y + 30 + Math.sin((Math.PI * 2 / 12) * i) * 30,
+            dx: Math.cos((Math.PI * 2 / 12) * i) * 3,
+            dy: Math.sin((Math.PI * 2 / 12) * i) * 3,
+            life: 8,
+            color: '#ffffff'
+        });
+    }
+}
+
+// 更新攻击特效
+function updateAttackEffects() {
+    attackEffects = attackEffects.filter(effect => {
+        effect.x += effect.dx;
+        effect.y += effect.dy;
+        effect.life--;
+        return effect.life > 0;
+    });
+}
+
+// 绘制攻击特效
+function drawAttackEffects() {
+    attackEffects.forEach(effect => {
+        ctx.fillStyle = effect.color;
+        ctx.fillRect(effect.x, effect.y, 3, 3);
+    });
 }
 
 // 碰撞检测
@@ -299,46 +450,117 @@ function drawPlayer(player, color) {
     ctx.fillStyle = color;
     ctx.fillRect(player.x, player.y, player.width, player.height);
     
+    // 绘制机甲细节 - 主体纹理
+    ctx.fillStyle = color === '#ff0000' ? '#cc0000' : '#0000cc';
+    ctx.fillRect(player.x + 5, player.y + 5, 30, 10);
+    ctx.fillRect(player.x + 5, player.y + 25, 30, 10);
+    ctx.fillRect(player.x + 5, player.y + 45, 30, 10);
+    
     // 绘制机甲头部
     ctx.fillStyle = '#000000';
-    ctx.fillRect(player.x + 10, player.y - 10, 20, 10);
+    ctx.fillRect(player.x + 10, player.y - 15, 20, 15);
+    
+    // 绘制机甲眼睛
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(player.x + 12, player.y - 12, 6, 6);
+    ctx.fillRect(player.x + 22, player.y - 12, 6, 6);
+    
+    // 绘制机甲天线
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(player.x + 20, player.y - 15);
+    ctx.lineTo(player.x + 20, player.y - 25);
+    ctx.stroke();
     
     // 绘制机甲手臂
     if (player.direction === 'right') {
         // 右臂
         if (player.isAttacking) {
             // 攻击动画
+            ctx.fillStyle = color;
             ctx.fillRect(player.x + player.width, player.y + 10, 20, 10);
+            // 手臂细节
+            ctx.fillStyle = color === '#ff0000' ? '#cc0000' : '#0000cc';
+            ctx.fillRect(player.x + player.width + 5, player.y + 12, 10, 6);
+            // 攻击特效
+            ctx.fillStyle = '#ffcc00';
+            ctx.fillRect(player.x + player.width + 20, player.y + 10, 5, 10);
         } else {
+            ctx.fillStyle = color;
             ctx.fillRect(player.x + player.width, player.y + 15, 15, 10);
+            // 手臂细节
+            ctx.fillStyle = color === '#ff0000' ? '#cc0000' : '#0000cc';
+            ctx.fillRect(player.x + player.width + 2, player.y + 17, 11, 6);
         }
         // 左臂
+        ctx.fillStyle = color;
         ctx.fillRect(player.x - 15, player.y + 15, 15, 10);
+        // 手臂细节
+        ctx.fillStyle = color === '#ff0000' ? '#cc0000' : '#0000cc';
+        ctx.fillRect(player.x - 13, player.y + 17, 11, 6);
     } else {
         // 左臂
         if (player.isAttacking) {
             // 攻击动画
+            ctx.fillStyle = color;
             ctx.fillRect(player.x - 20, player.y + 10, 20, 10);
+            // 手臂细节
+            ctx.fillStyle = color === '#ff0000' ? '#cc0000' : '#0000cc';
+            ctx.fillRect(player.x - 15, player.y + 12, 10, 6);
+            // 攻击特效
+            ctx.fillStyle = '#ffcc00';
+            ctx.fillRect(player.x - 25, player.y + 10, 5, 10);
         } else {
+            ctx.fillStyle = color;
             ctx.fillRect(player.x - 15, player.y + 15, 15, 10);
+            // 手臂细节
+            ctx.fillStyle = color === '#ff0000' ? '#cc0000' : '#0000cc';
+            ctx.fillRect(player.x - 13, player.y + 17, 11, 6);
         }
         // 右臂
+        ctx.fillStyle = color;
         ctx.fillRect(player.x + player.width, player.y + 15, 15, 10);
+        // 手臂细节
+        ctx.fillStyle = color === '#ff0000' ? '#cc0000' : '#0000cc';
+        ctx.fillRect(player.x + player.width + 2, player.y + 17, 11, 6);
     }
     
     // 绘制机甲腿部
+    ctx.fillStyle = color;
     ctx.fillRect(player.x + 10, player.y + player.height, 10, 15);
     ctx.fillRect(player.x + 20, player.y + player.height, 10, 15);
     
+    // 腿部细节
+    ctx.fillStyle = color === '#ff0000' ? '#cc0000' : '#0000cc';
+    ctx.fillRect(player.x + 12, player.y + player.height + 2, 6, 11);
+    ctx.fillRect(player.x + 22, player.y + player.height + 2, 6, 11);
+    
+    // 绘制机甲 feet
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(player.x + 8, player.y + player.height + 15, 14, 5);
+    ctx.fillRect(player.x + 18, player.y + player.height + 15, 14, 5);
+    
     // 绘制防御盾
     if (player.isDefending) {
+        // 防御盾动画
+        const shieldSize = 10 + Math.sin(Date.now() / 100) * 2;
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 2;
-        ctx.strokeRect(player.x - 5, player.y - 5, player.width + 10, player.height + 10);
+        ctx.strokeRect(player.x - shieldSize/2, player.y - shieldSize/2, player.width + shieldSize, player.height + shieldSize);
         
         // 防御动画效果
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-        ctx.fillRect(player.x - 5, player.y - 5, player.width + 10, player.height + 10);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.fillRect(player.x - shieldSize/2, player.y - shieldSize/2, player.width + shieldSize, player.height + shieldSize);
+        
+        // 防御粒子效果
+        for (let i = 0; i < 8; i++) {
+            const angle = (Math.PI * 2 / 8) * i;
+            const x = player.x + player.width/2 + Math.cos(angle) * (player.width/2 + shieldSize);
+            const y = player.y + player.height/2 + Math.sin(angle) * (player.height/2 + shieldSize);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(x, y, 2, 2);
+        }
     }
     
     // 恢复状态
