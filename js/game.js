@@ -1,36 +1,66 @@
 // 游戏状态管理
 const gameState = {
     currentPage: 'home',
+    gameTime: 99, // 游戏时间（秒）
+    gameTimer: null,
+    isGameStarted: false,
+    isGamePaused: false,
     players: {
         player1: {
+            id: 'player1',
+            name: '红色机甲',
             x: 100,
             y: 250,
             width: 40,
             height: 60,
             health: 100,
+            maxHealth: 100,
+            energy: 0,
+            maxEnergy: 100,
             attack: 10,
             defense: 5,
             speed: 5,
             direction: 'right',
+            state: 'idle', // idle, moving, attacking, defending, hit, dead
+            attackType: null, // light, heavy, special, ultimate
             isAttacking: false,
             isDefending: false,
+            isHit: false,
             attackCooldown: 0,
-            defenseCooldown: 0
+            defenseCooldown: 0,
+            comboCount: 0,
+            comboTimer: 0,
+            comboDamageBonus: 1.0,
+            animationFrame: 0,
+            hitEffect: null
         },
         player2: {
+            id: 'player2',
+            name: '蓝色机甲',
             x: 660,
             y: 250,
             width: 40,
             height: 60,
             health: 100,
+            maxHealth: 100,
+            energy: 0,
+            maxEnergy: 100,
             attack: 10,
             defense: 5,
             speed: 5,
             direction: 'left',
+            state: 'idle',
+            attackType: null,
             isAttacking: false,
             isDefending: false,
+            isHit: false,
             attackCooldown: 0,
-            defenseCooldown: 0
+            defenseCooldown: 0,
+            comboCount: 0,
+            comboTimer: 0,
+            comboDamageBonus: 1.0,
+            animationFrame: 0,
+            hitEffect: null
         }
     },
     keys: {
@@ -39,16 +69,24 @@ const gameState = {
         a: false,
         s: false,
         d: false,
-        j: false,
-        k: false,
+        j: false, // 轻攻击
+        k: false, // 防御
+        l: false, // 重攻击
+        u: false, // 特殊技能
+        i: false, // 必杀技
         // 玩家2控制
         arrowUp: false,
         arrowLeft: false,
         arrowDown: false,
         arrowRight: false,
-        num1: false,
-        num2: false
+        num1: false, // 轻攻击
+        num2: false, // 防御
+        num3: false, // 重攻击
+        num7: false, // 特殊技能
+        num8: false // 必杀技
     },
+    attackEffects: [],
+    damageNumbers: [],
     gameLoop: null
 };
 
@@ -77,40 +115,81 @@ const resultTitle = document.getElementById('result');
 // 初始化游戏
 function initGame() {
     // 重置游戏状态
+    gameState.gameTime = 99;
+    gameState.isGameStarted = true;
+    gameState.isGamePaused = false;
+    
+    // 重置玩家状态
     gameState.players.player1 = {
+        id: 'player1',
+        name: '红色机甲',
         x: 100,
         y: 250,
         width: 40,
         height: 60,
         health: 100,
+        maxHealth: 100,
+        energy: 0,
+        maxEnergy: 100,
         attack: 10,
         defense: 5,
         speed: 5,
         direction: 'right',
+        state: 'idle',
+        attackType: null,
         isAttacking: false,
         isDefending: false,
+        isHit: false,
         attackCooldown: 0,
-        defenseCooldown: 0
+        defenseCooldown: 0,
+        comboCount: 0,
+        comboTimer: 0,
+        comboDamageBonus: 1.0,
+        animationFrame: 0,
+        hitEffect: null
     };
     
     gameState.players.player2 = {
+        id: 'player2',
+        name: '蓝色机甲',
         x: 660,
         y: 250,
         width: 40,
         height: 60,
         health: 100,
+        maxHealth: 100,
+        energy: 0,
+        maxEnergy: 100,
         attack: 10,
         defense: 5,
         speed: 5,
         direction: 'left',
+        state: 'idle',
+        attackType: null,
         isAttacking: false,
         isDefending: false,
+        isHit: false,
         attackCooldown: 0,
-        defenseCooldown: 0
+        defenseCooldown: 0,
+        comboCount: 0,
+        comboTimer: 0,
+        comboDamageBonus: 1.0,
+        animationFrame: 0,
+        hitEffect: null
     };
     
-    // 更新血量条
+    // 清空特效
+    gameState.attackEffects = [];
+    gameState.damageNumbers = [];
+    
+    // 更新UI
     updateHealthBars();
+    updateEnergyBars();
+    updateComboDisplay();
+    updateTimerDisplay();
+    
+    // 开始游戏时间
+    startGameTimer();
     
     // 开始游戏循环
     if (gameState.gameLoop) {
@@ -128,8 +207,8 @@ function gameLoop() {
     // 绘制背景
     drawBackground();
     
-    // 更新玩家状态
-    updatePlayers();
+    // 更新游戏状态
+    updateGame();
     
     // 绘制玩家
     drawPlayers();
@@ -137,8 +216,33 @@ function gameLoop() {
     // 绘制攻击特效
     drawAttackEffects();
     
+    // 绘制伤害数字
+    drawDamageNumbers();
+    
+    // 绘制战斗UI
+    drawBattleUI();
+    
     // 检查游戏结束条件
     checkGameEnd();
+}
+
+// 更新游戏状态
+function updateGame() {
+    if (!gameState.isGameStarted || gameState.isGamePaused) {
+        return;
+    }
+    
+    // 更新玩家状态
+    updatePlayers();
+    
+    // 更新连击系统
+    updateComboSystem();
+    
+    // 更新攻击特效
+    updateAttackEffects();
+    
+    // 更新伤害数字
+    updateDamageNumbers();
 }
 
 // 绘制背景
@@ -265,6 +369,10 @@ function updatePlayers() {
     if (player1.defenseCooldown > 0) player1.defenseCooldown--;
     if (player2.attackCooldown > 0) player2.attackCooldown--;
     if (player2.defenseCooldown > 0) player2.defenseCooldown--;
+    
+    // 更新动画帧
+    player1.animationFrame++;
+    player2.animationFrame++;
 }
 
 // 更新单个玩家

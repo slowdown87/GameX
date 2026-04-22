@@ -208,12 +208,24 @@ body {
     cursor: pointer;
 }
 
-.action-btn.attack {
+.action-btn.light-attack {
     background-color: #ff0000;
+}
+
+.action-btn.heavy-attack {
+    background-color: #ff6600;
 }
 
 .action-btn.defend {
     background-color: #00ff00;
+}
+
+.action-btn.special {
+    background-color: #0066ff;
+}
+
+.action-btn.ultimate {
+    background-color: #9900ff;
 }
 
 /* 游戏结束界面 */

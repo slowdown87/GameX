@@ -18,14 +18,20 @@
                 <div class="control-group">
                     <h3>玩家1 (红色机甲)</h3>
                     <p>移动: W, A, S, D</p>
-                    <p>攻击: J</p>
+                    <p>轻攻击: J</p>
+                    <p>重攻击: L</p>
                     <p>防御: K</p>
+                    <p>特殊技能: U</p>
+                    <p>必杀技: I</p>
                 </div>
                 <div class="control-group">
                     <h3>玩家2 (蓝色机甲)</h3>
                     <p>移动: 方向键</p>
-                    <p>攻击: 数字键 1</p>
+                    <p>轻攻击: 数字键 1</p>
+                    <p>重攻击: 数字键 3</p>
                     <p>防御: 数字键 2</p>
+                    <p>特殊技能: 数字键 7</p>
+                    <p>必杀技: 数字键 8</p>
                 </div>
             </div>
         </div>
@@ -50,8 +56,11 @@
                 <button class="dpad-btn right">D</button>
             </div>
             <div class="action-buttons player1">
-                <button class="action-btn attack">J</button>
+                <button class="action-btn light-attack">J</button>
+                <button class="action-btn heavy-attack">L</button>
                 <button class="action-btn defend">K</button>
+                <button class="action-btn special">U</button>
+                <button class="action-btn ultimate">I</button>
             </div>
             <div class="dpad player2">
                 <button class="dpad-btn up">↑</button>
@@ -60,8 +69,11 @@
                 <button class="dpad-btn right">→</button>
             </div>
             <div class="action-buttons player2">
-                <button class="action-btn attack">1</button>
+                <button class="action-btn light-attack">1</button>
+                <button class="action-btn heavy-attack">3</button>
                 <button class="action-btn defend">2</button>
+                <button class="action-btn special">7</button>
+                <button class="action-btn ultimate">8</button>
             </div>
         </div>
     </div>
@@ -72,6 +84,14 @@
         <button id="restart-btn" class="pixel-btn">重新开始</button>
     </div>
 
-    <script src="js/game.js"></script>
+    <script type="module">
+        import Game from './js/core/Game.js';
+        
+        // 初始化游戏
+        window.addEventListener('DOMContentLoaded', () => {
+            const game = new Game();
+            game.init();
+        });
+    </script>
 </body>
 </html>
